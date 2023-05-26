@@ -42,24 +42,24 @@ extern "C"
 #endif
 #endif
 
-typedef struct AV1_File
+typedef struct AV1_Context
 {
 	Dav1dContext *context;
-} AV1_File;
+} AV1_Context;
 
-DECLSPEC int df_fopen(const char *fname, AV1_File *file);
-DECLSPEC void df_close(AV1_File *file);
+DECLSPEC int df_fopen(const char *fname, AV1_Context *context);
+DECLSPEC void df_close(AV1_Context *context);
 
 DECLSPEC void df_videoinfo(
-	AV1_File *file,
+	AV1_Context *context,
 	int *width,
 	int *height,
 	double *fps);
 
-DECLSPEC int df_eos(AV1_File *file);
-DECLSPEC void df_reset(AV1_File *file);
+DECLSPEC int df_eos(AV1_Context *context);
+DECLSPEC void df_reset(AV1_Context *context);
 
-DECLSPEC int df_readvideo(AV1_File *file, char *buffer, int numFrames);
+DECLSPEC int df_readvideo(AV1_Context *context, char *buffer, int numFrames);
 
 #ifdef __cplusplus
 }
