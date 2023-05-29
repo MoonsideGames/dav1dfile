@@ -42,12 +42,9 @@ extern "C"
 #endif
 #endif
 
-typedef struct AV1_Context
-{
-	Dav1dContext *context;
-} AV1_Context;
+typedef struct AV1_Context AV1_Context;
 
-DECLSPEC int df_fopen(const char *fname, AV1_Context *context);
+DECLSPEC int df_fopen(const char *fname, AV1_Context **context);
 DECLSPEC void df_close(AV1_Context *context);
 
 DECLSPEC void df_videoinfo(
