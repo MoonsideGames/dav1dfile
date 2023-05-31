@@ -44,6 +44,14 @@ extern "C"
 
 typedef struct AV1_Context AV1_Context;
 
+typedef enum PixelLayout
+{
+	I400,
+	I420,
+	I422,
+	I444
+} PixelLayout;
+
 DECLSPEC int df_fopen(const char *fname, AV1_Context **context);
 DECLSPEC void df_close(AV1_Context *context);
 
@@ -51,7 +59,8 @@ DECLSPEC void df_videoinfo(
 	AV1_Context *context,
 	int *width,
 	int *height,
-	double *fps);
+	double *fps,
+	PixelLayout *pixelLayout);
 
 DECLSPEC int df_eos(AV1_Context *context);
 DECLSPEC void df_reset(AV1_Context *context);

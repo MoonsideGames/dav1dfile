@@ -41,6 +41,14 @@ public static class dav1dfile
 		(DAV1DFILE_PATCH_VERSION)
 	);
 
+	public enum PixelLayout
+	{
+		I400,
+		I420,
+		I422,
+		I444
+	}
+
 	[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
 	public extern int df_fopen(
 		[MarshalAs(UnmanagedType.LPUTF8Str)] string filename,
@@ -55,7 +63,8 @@ public static class dav1dfile
 		IntPtr context,
 		out int width,
 		out int height,
-		out double fps
+		out double fps,
+		out PixelLayout pixelLayout
 	);
 
 	[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
