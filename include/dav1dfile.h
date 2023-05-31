@@ -56,7 +56,12 @@ DECLSPEC void df_videoinfo(
 DECLSPEC int df_eos(AV1_Context *context);
 DECLSPEC void df_reset(AV1_Context *context);
 
-DECLSPEC int df_readvideo(AV1_Context *context, char *buffer, int numFrames);
+DECLSPEC int df_readvideo(
+	AV1_Context *context,
+	int numFrames,
+	void **yData,
+	void **uData,
+	void **vData);
 
 #ifdef __cplusplus
 }

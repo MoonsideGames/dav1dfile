@@ -54,7 +54,7 @@ add_library(dav1dfile
 	src/dav1dfile.c
 )
 
- set(DAV1D_BUILD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ext/dav1d/build")
+set(DAV1D_BUILD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ext/dav1d/build")
 set(LIB_FILENAME "${DAV1D_BUILD_DIR}/src/libdav1d${LIBRARY_SUFFIX}")
 if(NOT EXISTS "${LIB_FILENAME}")
 	if("${LIBRARY_SUFFIX}" STREQUAL ".a")
@@ -74,9 +74,9 @@ set(CODEC_INCLUDES ${CODEC_INCLUDES} "${DAV1D_BUILD_DIR}" "${DAV1D_BUILD_DIR}/in
 )
 set(CODEC_LIBRARIES ${CODEC_LIBRARIES} ${LIB_FILENAME})
 
-target_link_libraries(dav1dfile PRIVATE ${AVIF_CODEC_LIBRARIES} ${AVIF_PLATFORM_LIBRARIES})
+target_link_libraries(dav1dfile PRIVATE ${CODEC_LIBRARIES})
 target_include_directories(
-    dav1dfile PUBLIC $<BUILD_INTERFACE:${libavif_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include> PRIVATE ${CODEC_INCLUDES}
+    dav1dfile PUBLIC $<BUILD_INTERFACE:${SOURCE_DIR}/include> PRIVATE ${CODEC_INCLUDES}
 )
 
 # Build flags
@@ -100,24 +100,3 @@ set_target_properties(dav1dfile PROPERTIES OUTPUT_NAME "dav1dfile"
 	VERSION ${LIB_VERSION}
 	SOVERSION ${LIB_MAJOR_VERSION}
 )
-
-# SDL2 Dependency
-if (DEFINED SDL2_INCLUDE_DIRS AND DEFINED SDL2_LIBRARIES)
-	message(STATUS "using pre-defined SDL2 variables SDL2_INCLUDE_DIRS and SDL2_LIBRARIES")
-	target_include_directories(dav1dfile PUBLIC "$<BUILD_INTERFACE:${SDL2_INCLUDE_DIRS}>")
-	target_link_libraries(dav1dfile PUBLIC ${SDL2_LIBRARIES})
-else()
-	# Only try to autodetect if both SDL2 variables aren't explicitly set
-	find_package(SDL2 CONFIG)
-	if (TARGET SDL2::SDL2)
-		message(STATUS "using TARGET SDL2::SDL2")
-		target_link_libraries(dav1dfile PUBLIC SDL2::SDL2)
-	elseif (TARGET SDL2)
-		message(STATUS "using TARGET SDL2")
-		target_link_libraries(dav1dfile PUBLIC SDL2)
-	else()
-		message(STATUS "no TARGET SDL2::SDL2, or SDL2, using variables")
-		target_include_directories(dav1dfile PUBLIC "$<BUILD_INTERFACE:${SDL2_INCLUDE_DIRS}>")
-		target_link_libraries(dav1dfile PUBLIC ${SDL2_LIBRARIES})
-	endif()
-endif()
