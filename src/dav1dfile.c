@@ -51,6 +51,13 @@ typedef struct Context {
 	uint8_t eof;
 } Context;
 
+typedef struct PictureAllocatorData
+{
+	uint8_t *pictureMemory;
+	uint32_t yDataLength;
+	uint32_t uvDataLength;
+} PictureAllocatorData;
+
 static void allocator_no_op(const uint8_t *data, void *opaque)
 {
 	/* no-op */
@@ -113,8 +120,9 @@ void aligned_free(void *mem)
     }
 }
 
-int picture_alloc_no_op(Dav1dPicture *picture, void *opaque)
+int picture_alloc(Dav1dPicture *picture, void *opaque)
 {
+	PictureAllocatorData *allocatorData = malloc(sizeof(PictureAllocatorData));
 	uint32_t yLength;
 	uint32_t uvLength;
 	uint32_t chromaWidth;
@@ -148,23 +156,29 @@ int picture_alloc_no_op(Dav1dPicture *picture, void *opaque)
 		return -1;
 	}
 
-	picture->allocator_data = aligned_alloc(128, yLength + uvLength + uvLength);
-	picture->data[0] = picture->allocator_data;
-	picture->data[1] = (uint8_t*) picture->allocator_data + yLength;
-	picture->data[2] = (uint8_t*) picture->allocator_data + yLength + uvLength;
+	allocatorData->pictureMemory = aligned_alloc(128, yLength + uvLength + uvLength);
+	allocatorData->yDataLength = yLength;
+	allocatorData->uvDataLength = uvLength;
 
-	memset(picture->allocator_data, '\0', aligned(yLength + uvLength + uvLength, DAV1D_PICTURE_ALIGNMENT));
+	picture->data[0] = allocatorData->pictureMemory;
+	picture->data[1] = allocatorData->pictureMemory + yLength;
+	picture->data[2] = allocatorData->pictureMemory + yLength + uvLength;
+
+	memset(allocatorData->pictureMemory, '\0', aligned(yLength + uvLength + uvLength, DAV1D_PICTURE_ALIGNMENT));
 
 	/* FIXME: are these stride values correct */
 	picture->stride[0] = aligned(picture->p.w, 128);
 	picture->stride[1] = aligned(chromaWidth, 128);
 
+	picture->allocator_data = allocatorData;
+
 	return 0;
 }
 
-static void picture_free_no_op(Dav1dPicture *picture, void *opaque)
+static void picture_free(Dav1dPicture *picture, void *opaque)
 {
-	aligned_free(picture->allocator_data);
+	aligned_free(((PictureAllocatorData*)picture->allocator_data)->pictureMemory);
+	free(picture->allocator_data);
 }
 
 static inline int INTERNAL_getNextPacket(
@@ -219,8 +233,8 @@ static int df_open_from_memory(uint8_t *bytes, uint32_t size, AV1_Context **cont
 	memset(&internalContext->currentPicture, '\0', sizeof(Dav1dPicture));
 
 	dav1d_default_settings(&settings);
-	settings.allocator.alloc_picture_callback = picture_alloc_no_op;
-	settings.allocator.release_picture_callback = picture_free_no_op;
+	settings.allocator.alloc_picture_callback = picture_alloc;
+	settings.allocator.release_picture_callback = picture_free;
 	settings.allocator.cookie = internalContext;
 
 	result = dav1d_open(&dav1dContext, &settings);
@@ -339,6 +353,8 @@ int df_readvideo(
 	void **yData,
 	void **uData,
 	void **vData,
+	uint32_t *yDataLength,
+	uint32_t *uvDataLength,
 	uint32_t *yStride,
 	uint32_t *uvStride
 ) {
@@ -387,8 +403,10 @@ int df_readvideo(
 	*yData = internalContext->currentPicture.data[0];
 	*uData = internalContext->currentPicture.data[1];
 	*vData = internalContext->currentPicture.data[2];
-	*yStride = internalContext->currentPicture.stride[0];
-	*uvStride = internalContext->currentPicture.stride[1];
+	*yStride = (uint32_t) internalContext->currentPicture.stride[0];
+	*uvStride = (uint32_t) internalContext->currentPicture.stride[1];
+	*yDataLength = ((PictureAllocatorData *)internalContext->currentPicture.allocator_data)->yDataLength;
+	*uvDataLength = ((PictureAllocatorData *)internalContext->currentPicture.allocator_data)->uvDataLength;
 
 	return 1;
 }

@@ -71,6 +71,8 @@ DECLSPEC int df_readvideo(
 	void **yData,
 	void **uData,
 	void **vData,
+	uint32_t *yDataLength,
+	uint32_t *uvDataLength,
 	uint32_t *yStride,
 	uint32_t *uvStride);
 
