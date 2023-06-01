@@ -27,7 +27,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-public static class dav1dfile
+public static class Dav1dfile
 {
 	const string nativeLibName = "dav1dfile";
 
@@ -50,16 +50,16 @@ public static class dav1dfile
 	}
 
 	[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
-	public extern int df_fopen(
+	public extern static int df_fopen(
 		[MarshalAs(UnmanagedType.LPUTF8Str)] string filename,
 		out IntPtr context
 	);
 
 	[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
-	public extern void df_close(IntPtr context);
+	public extern static void df_close(IntPtr context);
 
 	[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
-	public extern void df_videoinfo(
+	public extern static void df_videoinfo(
 		IntPtr context,
 		out int width,
 		out int height,
@@ -68,17 +68,21 @@ public static class dav1dfile
 	);
 
 	[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
-	public extern int df_eos(IntPtr context);
+	public extern static int df_eos(IntPtr context);
 
 	[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
-	public extern void df_reset(IntPtr context);
+	public extern static void df_reset(IntPtr context);
 
 	[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
-	public extern int df_readvideo(
+	public extern static int df_readvideo(
 		IntPtr context,
 		int numFrames,
 		out IntPtr yDataPtr,
 		out IntPtr uDataPtr,
-		out IntPtr vDataPtr
+		out IntPtr vDataPtr,
+		out uint yDataLength,
+		out uint uvDataLength,
+		out uint yStride,
+		out uint uvStride
 	);
 }
