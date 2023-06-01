@@ -148,10 +148,7 @@ int picture_alloc_no_op(Dav1dPicture *picture, void *opaque)
 		return -1;
 	}
 
-	yLength = aligned(yLength, DAV1D_PICTURE_ALIGNMENT);
-	uvLength = aligned(uvLength, DAV1D_PICTURE_ALIGNMENT);
-
-	picture->allocator_data = aligned_alloc(DAV1D_PICTURE_ALIGNMENT, yLength + uvLength + uvLength);
+	picture->allocator_data = aligned_alloc(128, yLength + uvLength + uvLength);
 	picture->data[0] = picture->allocator_data;
 	picture->data[1] = (uint8_t*) picture->allocator_data + yLength;
 	picture->data[2] = (uint8_t*) picture->allocator_data + yLength + uvLength;
@@ -336,13 +333,15 @@ static int read_data(Context *internalContext, Dav1dData *data)
 	return 1;
 }
 
-static void unref_picture(Context *internalContext)
-{
-	dav1d_picture_unref(&internalContext->currentPicture);
-}
-
-int df_readvideo(AV1_Context *context,int numFrames, void **yData, void **uData, void **vData)
-{
+int df_readvideo(
+	AV1_Context *context,
+	int numFrames,
+	void **yData,
+	void **uData,
+	void **vData,
+	uint32_t *yStride,
+	uint32_t *uvStride
+) {
 	Context *internalContext = (Context*) context;
 	Dav1dData data;
 	int getPictureResult;
@@ -351,8 +350,10 @@ int df_readvideo(AV1_Context *context,int numFrames, void **yData, void **uData,
 
 	for (i = 0; i < numFrames; i += 1)
 	{
-		unref_picture(internalContext);
-		read_data(internalContext, &data);
+		if (read_data(internalContext, &data) == 0)
+		{
+			break;
+		}
 
 		do
 		{
@@ -364,6 +365,7 @@ int df_readvideo(AV1_Context *context,int numFrames, void **yData, void **uData,
 				return 0;
 			}
 
+			dav1d_picture_unref(&internalContext->currentPicture);
 			getPictureResult = dav1d_get_picture(internalContext->dav1dContext, &internalContext->currentPicture);
 
 			if (getPictureResult < 0)
@@ -385,6 +387,8 @@ int df_readvideo(AV1_Context *context,int numFrames, void **yData, void **uData,
 	*yData = internalContext->currentPicture.data[0];
 	*uData = internalContext->currentPicture.data[1];
 	*vData = internalContext->currentPicture.data[2];
+	*yStride = internalContext->currentPicture.stride[0];
+	*uvStride = internalContext->currentPicture.stride[1];
 
 	return 1;
 }

@@ -70,7 +70,9 @@ DECLSPEC int df_readvideo(
 	int numFrames,
 	void **yData,
 	void **uData,
-	void **vData);
+	void **vData,
+	uint32_t *yStride,
+	uint32_t *uvStride);
 
 #ifdef __cplusplus
 }
