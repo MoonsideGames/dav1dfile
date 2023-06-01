@@ -59,7 +59,6 @@ DECLSPEC void df_videoinfo(
 	AV1_Context *context,
 	int *width,
 	int *height,
-	double *fps,
 	PixelLayout *pixelLayout);
 
 DECLSPEC int df_eos(AV1_Context *context);

@@ -63,7 +63,6 @@ public static class Dav1dfile
 		IntPtr context,
 		out int width,
 		out int height,
-		out double fps,
 		out PixelLayout pixelLayout
 	);
 
