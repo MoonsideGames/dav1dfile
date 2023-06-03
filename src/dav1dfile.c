@@ -238,6 +238,7 @@ static int df_open_from_memory(uint8_t *bytes, uint32_t size, AV1_Context **cont
 	settings.allocator.alloc_picture_callback = picture_alloc;
 	settings.allocator.release_picture_callback = picture_free;
 	settings.allocator.cookie = internalContext;
+	settings.apply_grain = 0;
 
 	result = dav1d_open(&dav1dContext, &settings);
 	if (result < 0)
