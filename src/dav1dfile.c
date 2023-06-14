@@ -45,8 +45,8 @@ typedef struct Context {
 
 	uint8_t *bitstreamData;
 	uint32_t bitstreamDataSize;
-	uint32_t bitstreamIndex;
-	uint32_t currentOBUSize;
+	size_t bitstreamIndex;
+	size_t currentOBUSize;
 
 	Dav1dPicture currentPicture;
 
@@ -325,15 +325,21 @@ static int df_open_from_memory(uint8_t *bytes, uint32_t size, AV1_Context **cont
 
 static int df_open_from_file(FILE *file, AV1_Context **context)
 {
-	unsigned int len, start;
+	unsigned int len, start, result;
+
 	start = (unsigned int) ftell(file);
 	fseek(file, 0, SEEK_END);
 	len = (unsigned int) (ftell(file) - start);
 	fseek(file, start, SEEK_SET);
 
 	unsigned char *bytes = malloc(len);
-	fread(bytes, 1, len, file);
+	result = (unsigned int) fread(bytes, 1, len, file);
 	fclose(file);
+
+	if (result != len)
+	{
+		return 0;
+	}
 
 	return df_open_from_memory(bytes, len, context);
 }
@@ -397,7 +403,7 @@ int df_readvideo(
 ) {
 	Context *internalContext = (Context*) context;
 	Dav1dData data;
-	int getPictureResult;
+	int getPictureResult = -1;
 	int sendDataResult;
 	int i;
 
