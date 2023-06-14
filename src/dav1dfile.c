@@ -212,6 +212,11 @@ static inline int INTERNAL_getNextPacket(
 	return result >= 0;
 }
 
+uint32_t df_linked_version(void)
+{
+	return DAV1DFILE_COMPILED_VERSION;
+}
+
 static int df_open_from_memory(uint8_t *bytes, uint32_t size, AV1_Context **context)
 {
 	Context *internalContext = malloc(sizeof(Context));

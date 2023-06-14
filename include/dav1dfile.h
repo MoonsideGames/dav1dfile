@@ -42,6 +42,18 @@ extern "C"
 #endif
 #endif
 
+#define DAV1DFILE_MAJOR_VERSION 1
+#define DAV1DFILE_MINOR_VERSION 0
+#define DAV1DFILE_PATCH_VERSION 0
+
+#define DAV1DFILE_COMPILED_VERSION ( \
+	(DAV1DFILE_MAJOR_VERSION * 100 * 100) + \
+	(DAV1DFILE_MINOR_VERSION * 100) + \
+	(DAV1DFILE_PATCH_VERSION) \
+)
+
+DECLSPEC uint32_t df_linked_version(void);
+
 typedef struct AV1_Context AV1_Context;
 
 typedef enum PixelLayout

@@ -31,8 +31,8 @@ public static class Dav1dfile
 {
 	const string nativeLibName = "dav1dfile";
 
-	public const uint DAV1DFILE_MAJOR_VERSION = 0;
-	public const uint DAV1DFILE_MINOR_VERSION = 1;
+	public const uint DAV1DFILE_MAJOR_VERSION = 1;
+	public const uint DAV1DFILE_MINOR_VERSION = 0;
 	public const uint DAV1DFILE_PATCH_VERSION = 0;
 
 	public const uint DAV1DFILE_COMPILED_VERSION = (
@@ -40,6 +40,9 @@ public static class Dav1dfile
 		(DAV1DFILE_MINOR_VERSION * 100) +
 		(DAV1DFILE_PATCH_VERSION)
 	);
+
+	[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
+	public static extern uint df_linked_version();
 
 	public enum PixelLayout
 	{
