@@ -436,6 +436,11 @@ int df_readvideo(
 		} while (data.sz || read_data(internalContext, &data) == 1);
 	}
 
+	if (getPictureResult != 0)
+	{
+		return 0;
+	}
+
 	/* Set the picture data pointers */
 	*yData = internalContext->currentPicture.data[0];
 	*uData = internalContext->currentPicture.data[1];
