@@ -267,7 +267,7 @@ static int df_open_from_memory(uint8_t *bytes, uint32_t size, AV1_Context **cont
 		{
 			internalContext->width = sequenceHeader.max_width;
 			internalContext->height = sequenceHeader.max_height;
-			internalContext->pixelLayout = sequenceHeader.layout;
+			internalContext->pixelLayout = (PixelLayout) sequenceHeader.layout;
 			break;
 		}
 	}
