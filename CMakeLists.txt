@@ -29,7 +29,7 @@ endif()
 # Platform Flags
 if(APPLE)
 	set(CMAKE_MACOSX_RPATH ON)
-	set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
+	set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
 	set(LOBJC "objc")
 elseif(WIN32)
 	# "dav1dfile.dll", not "libdav1dfile.dll"
@@ -54,7 +54,7 @@ add_library(dav1dfile
 	src/dav1dfile.c
 )
 
-set(DAV1D_BUILD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ext/dav1d/build")
+set(DAV1D_BUILD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/dav1d")
 set(LIB_FILENAME "${DAV1D_BUILD_DIR}/src/libdav1d${LIBRARY_SUFFIX}")
 if(NOT EXISTS "${LIB_FILENAME}")
 	if("${LIBRARY_SUFFIX}" STREQUAL ".a")
@@ -62,7 +62,7 @@ if(NOT EXISTS "${LIB_FILENAME}")
 	else()
 		# On windows, meson will produce a libdav1d.a instead of the expected libdav1d.dll/.lib.
 		# See https://github.com/mesonbuild/meson/issues/8153.
-		set(LIB_FILENAME "${CMAKE_CURRENT_SOURCE_DIR}/ext/dav1d/build/src/libdav1d.a")
+		set(LIB_FILENAME "${CMAKE_CURRENT_SOURCE_DIR}/dav1d/build/src/libdav1d.a")
 		if(NOT EXISTS "${LIB_FILENAME}")
 			message(FATAL_ERROR "dav1dfile: ${LIB_FILENAME} (or libdav1d${LIBRARY_SUFFIX}) is missing, bailing out")
 		endif()
@@ -70,7 +70,7 @@ if(NOT EXISTS "${LIB_FILENAME}")
 endif()
 
 set(CODEC_INCLUDES ${CODEC_INCLUDES} "${DAV1D_BUILD_DIR}" "${DAV1D_BUILD_DIR}/include"
-						"${DAV1D_BUILD_DIR}/include/dav1d" "${CMAKE_CURRENT_SOURCE_DIR}/ext/dav1d/include"
+						"${DAV1D_BUILD_DIR}/include/dav1d" "${CMAKE_CURRENT_SOURCE_DIR}/dav1d/build/include/dav1d"
 )
 set(CODEC_LIBRARIES ${CODEC_LIBRARIES} ${LIB_FILENAME})
 
