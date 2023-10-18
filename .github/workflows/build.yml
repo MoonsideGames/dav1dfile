@@ -111,7 +111,7 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
   
       - name: Dylib Fixup
-        run: install_name_tool -id @rpath/lib$1.$2.dylib ${{github.workspace}}/build/libdav1dfile.1.dylib
+        run: install_name_tool -id @rpath/libdav1dfile.1.dylib ${{github.workspace}}/build/libdav1dfile.1.dylib
 
       - name: Release
         uses: softprops/action-gh-release@v1
