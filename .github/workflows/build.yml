@@ -93,10 +93,10 @@ jobs:
         uses: Homebrew/actions/setup-homebrew@master
 
       - name: Install meson
-        run: pip3 install --user meson
+        run: pip3 install meson ninja
 
       - name: Install packages
-        run: brew install nasm ninja
+        run: brew install nasm
 
       - name: Get libdav1d
         run: sh ext/dav1d.cmd
