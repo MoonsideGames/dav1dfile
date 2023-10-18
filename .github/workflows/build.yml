@@ -29,7 +29,7 @@ jobs:
       run: sudo apt -y install nasm ninja-build
 
     - name: Get libdav1d
-      run: cd ext && sh dav1d.cmd
+      run: sh ext/dav1d.cmd
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -68,7 +68,7 @@ jobs:
           git
 
     - name: Get libdav1d
-      run: cd ext && sh dav1d.cmd
+      run: sh ext/dav1d.cmd
 
     - name: CMake configure (Release)
       run: cmake -B release -G Ninja . -DCMAKE_BUILD_TYPE=Release
@@ -81,3 +81,37 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: ./release/dav1dfile.dll
+
+  osx:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Install meson
+        run: pip3 install --user meson
+
+      - name: Install packages
+        run: brew install nasm ninja-build
+
+      - name: Get libdav1d
+        run: sh ext/dav1d.cmd
+
+      - name: Configure CMake
+        # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+        # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+  
+      - name: Build
+        # Build your program with the given configuration
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+  
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: ${{github.workspace}}/build/libdav1dfile.1.dylib
