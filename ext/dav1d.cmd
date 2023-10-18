@@ -15,5 +15,5 @@ cd build
 : # Build with asan: -Db_sanitize=address
 : # Build with ubsan: -Db_sanitize=undefined
 MACOSX_DEPLOYMENT_TARGET=10.9 meson setup --default-library=static --buildtype release ..
-ninja
+MACOSX_DEPLOYMENT_TARGET=10.9 ninja
 cd ../..
