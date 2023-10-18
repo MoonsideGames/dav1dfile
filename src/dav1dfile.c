@@ -89,7 +89,7 @@ int size_add_overflow (size_t a, size_t b, size_t *ret)
     return 0;
 }
 
-void *aligned_alloc(size_t alignment, size_t size)
+void *dav1dfile_aligned_alloc(size_t alignment, size_t size)
 {
     size_t padding;
     uint8_t *retval = NULL;
@@ -117,7 +117,7 @@ void *aligned_alloc(size_t alignment, size_t size)
     return retval;
 }
 
-void aligned_free(void *mem)
+void dav1dfile_aligned_free(void *mem)
 {
     if (mem) {
         void *original;
@@ -138,7 +138,7 @@ static uint8_t* acquire_buffer_from_pool(Context *context)
 	}
 	else
 	{
-		result = aligned_alloc(128, size);
+		result = dav1dfile_aligned_alloc(128, size);
 	}
 
 	memset(result, '\0', size);
@@ -487,7 +487,7 @@ void df_close(AV1_Context *context)
 
 	for (i = 0; i < internalContext->pictureMemoryPool.bufferCount; i += 1)
 	{
-		aligned_free(internalContext->pictureMemoryPool.buffers[i]);
+		dav1dfile_aligned_free(internalContext->pictureMemoryPool.buffers[i]);
 	}
 	free(internalContext->pictureMemoryPool.buffers);
 
