@@ -58,10 +58,10 @@ typedef struct AV1_Context AV1_Context;
 
 typedef enum PixelLayout
 {
-	I400,
-	I420,
-	I422,
-	I444
+	PIXEL_LAYOUT_I400,
+	PIXEL_LAYOUT_I420,
+	PIXEL_LAYOUT_I422,
+	PIXEL_LAYOUT_I444
 } PixelLayout;
 
 DECLSPEC int df_fopen(const char *fname, AV1_Context **context);

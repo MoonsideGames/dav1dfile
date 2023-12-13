@@ -33,13 +33,6 @@
 #define inline __inline
 #endif /* _WIN32 */
 
-typedef struct PictureMemoryPool
-{
-	uint8_t **buffers;
-	uint32_t bufferCount;
-	uint32_t bufferCapacity;
-} PictureMemoryPool;
-
 typedef struct Context {
 	Dav1dContext *dav1dContext;
 
@@ -54,128 +47,12 @@ typedef struct Context {
 	int32_t height;
 	PixelLayout pixelLayout;
 
-	uint32_t yDataLength;
-	uint32_t uvDataLength;
-	uint32_t yStride;
-	uint32_t uvStride;
-
 	uint8_t eof;
-
-	PictureMemoryPool pictureMemoryPool;
 } Context;
 
 static void allocator_no_op(const uint8_t *data, void *opaque)
 {
 	/* no-op */
-}
-
-static inline uint32_t aligned(
-	uint32_t n,
-	uint32_t alignment
-) {
-	return ((n + (alignment - 1)) & ~(alignment - 1));
-}
-
-/* Aligned alloc functions borrowed from SDL 3.0 */
-
-# define SDL_SIZE_MAX ((size_t) -1)
-
-int size_add_overflow (size_t a, size_t b, size_t *ret)
-{
-    if (b > SIZE_MAX - a) {
-        return -1;
-    }
-    *ret = a + b;
-    return 0;
-}
-
-void *dav1dfile_aligned_alloc(size_t alignment, size_t size)
-{
-    size_t padding;
-    uint8_t *retval = NULL;
-
-    if (alignment < sizeof(void*)) {
-        alignment = sizeof(void*);
-    }
-    padding = (alignment - (size % alignment));
-
-    if (size_add_overflow(size, alignment, &size) == 0 &&
-        size_add_overflow(size, sizeof(void *), &size) == 0 &&
-        size_add_overflow(size, padding, &size) == 0) {
-        void *original = malloc(size);
-        if (original) {
-            /* Make sure we have enough space to store the original pointer */
-            retval = (uint8_t *)original + sizeof(original);
-
-            /* Align the pointer we're going to return */
-            retval += alignment - (((size_t)retval) % alignment);
-
-            /* Store the original pointer right before the returned value */
-            memcpy(retval - sizeof(original), &original, sizeof(original));
-        }
-    }
-    return retval;
-}
-
-void dav1dfile_aligned_free(void *mem)
-{
-    if (mem) {
-        void *original;
-        memcpy(&original, ((uint8_t *)mem - sizeof(original)), sizeof(original));
-        free(original);
-    }
-}
-
-static uint8_t* acquire_buffer_from_pool(Context *context)
-{
-	uint8_t *result;
-	uint32_t size = context->yDataLength + context->uvDataLength + context->uvDataLength;
-
-	if (context->pictureMemoryPool.bufferCount > 0)
-	{
-		result = context->pictureMemoryPool.buffers[context->pictureMemoryPool.bufferCount - 1];
-		context->pictureMemoryPool.bufferCount -= 1;
-	}
-	else
-	{
-		result = dav1dfile_aligned_alloc(128, size);
-	}
-
-	memset(result, '\0', size);
-
-	return result;
-}
-
-static void return_buffer_to_pool(Context *context, uint8_t *buffer)
-{
-	if (context->pictureMemoryPool.bufferCount >= context->pictureMemoryPool.bufferCapacity)
-	{
-		context->pictureMemoryPool.bufferCapacity *= 2;
-		context->pictureMemoryPool.buffers = realloc(context->pictureMemoryPool.buffers, sizeof(uint8_t*) * context->pictureMemoryPool.bufferCapacity);
-	}
-
-	context->pictureMemoryPool.buffers[context->pictureMemoryPool.bufferCount] = buffer;
-	context->pictureMemoryPool.bufferCount += 1;
-}
-
-int picture_alloc(Dav1dPicture *picture, void *opaque)
-{
-	Context *internalContext = (Context*) opaque;
-	picture->allocator_data = acquire_buffer_from_pool(internalContext);
-
-	picture->data[0] = picture->allocator_data;
-	picture->data[1] = (uint8_t*) picture->allocator_data + internalContext->yDataLength;
-	picture->data[2] = (uint8_t*) picture->allocator_data + internalContext->yDataLength + internalContext->uvDataLength;
-	picture->stride[0] = internalContext->yStride;
-	picture->stride[1] = internalContext->uvStride;
-
-	return 0;
-}
-
-static void picture_free(Dav1dPicture *picture, void *opaque)
-{
-	Context *internalContext = (Context*) opaque;
-	return_buffer_to_pool(internalContext, picture->allocator_data);
 }
 
 static inline int INTERNAL_getNextPacket(
@@ -223,7 +100,6 @@ static int df_open_from_memory(uint8_t *bytes, uint32_t size, AV1_Context **cont
 	Dav1dContext *dav1dContext = malloc(sizeof(void*));
 	Dav1dSettings settings;
 	Dav1dSequenceHeader sequenceHeader;
-	uint32_t chromaWidth;
 	int result;
 
 	internalContext->bitstreamData = bytes;
@@ -235,14 +111,7 @@ static int df_open_from_memory(uint8_t *bytes, uint32_t size, AV1_Context **cont
 	internalContext->height = 0;
 	memset(&internalContext->currentPicture, '\0', sizeof(Dav1dPicture));
 
-	internalContext->pictureMemoryPool.bufferCapacity = 4;
-	internalContext->pictureMemoryPool.bufferCount = 0;
-	internalContext->pictureMemoryPool.buffers = malloc(sizeof(uint8_t *) * internalContext->pictureMemoryPool.bufferCapacity);
-
 	dav1d_default_settings(&settings);
-	settings.allocator.alloc_picture_callback = picture_alloc;
-	settings.allocator.release_picture_callback = picture_free;
-	settings.allocator.cookie = internalContext;
 	settings.apply_grain = 0;
 
 	result = dav1d_open(&dav1dContext, &settings);
@@ -254,8 +123,6 @@ static int df_open_from_memory(uint8_t *bytes, uint32_t size, AV1_Context **cont
 	}
 
 	internalContext->dav1dContext = dav1dContext;
-
-	/* TODO: initial sequence header parse */
 
 	while (INTERNAL_getNextPacket(internalContext))
 	{
@@ -273,7 +140,7 @@ static int df_open_from_memory(uint8_t *bytes, uint32_t size, AV1_Context **cont
 	}
 
 	/* Did not find a valid sequence header! */
-	if (internalContext->width == 0 || internalContext->height == 0)
+	if (internalContext->width == 0 || internalContext->height == 0 || internalContext->pixelLayout == PIXEL_LAYOUT_I400)
 	{
 		dav1d_close(&dav1dContext);
 		free(dav1dContext);
@@ -284,44 +151,6 @@ static int df_open_from_memory(uint8_t *bytes, uint32_t size, AV1_Context **cont
 	/* Reset the stream index */
 	internalContext->bitstreamIndex = 0;
 	internalContext->currentOBUSize = 0;
-
-	/* Set data parameters */
-	internalContext->yDataLength =
-		aligned(internalContext->width, 128) *
-		aligned(internalContext->height, 128);
-
-	if (internalContext->pixelLayout == I420)
-	{
-		chromaWidth = internalContext->width / 2;
-		internalContext->uvDataLength =
-			aligned(chromaWidth, 128) *
-			aligned(internalContext->height / 2, 128);
-	}
-	else if (internalContext->pixelLayout == I422)
-	{
-		chromaWidth = internalContext->width / 2;
-		internalContext->uvDataLength =
-			aligned(chromaWidth, 128) *
-			aligned(internalContext->height, 128);
-	}
-	else if (internalContext->pixelLayout == I444)
-	{
-		chromaWidth = internalContext->width;
-		internalContext->uvDataLength =
-			aligned(chromaWidth, 128) *
-			aligned(internalContext->height, 128);
-	}
-	else
-	{
-		/* I400 format not supported!*/
-		dav1d_close(&dav1dContext);
-		free(dav1dContext);
-		free(internalContext);
-		return 0;
-	}
-
-	internalContext->yStride = aligned(internalContext->width, 128);
-	internalContext->uvStride = aligned(chromaWidth, 128);
 
 	*context = (AV1_Context*) internalContext;
 
@@ -456,10 +285,13 @@ int df_readvideo(
 	*yData = internalContext->currentPicture.data[0];
 	*uData = internalContext->currentPicture.data[1];
 	*vData = internalContext->currentPicture.data[2];
-	*yStride = internalContext->yStride;
-	*uvStride = internalContext->uvStride;
-	*yDataLength = internalContext->yDataLength;
-	*uvDataLength = internalContext->uvDataLength;
+	*yStride = internalContext->currentPicture.stride[0];
+	*uvStride = internalContext->currentPicture.stride[1];
+
+	const int ss_ver = internalContext->currentPicture.p.layout == DAV1D_PIXEL_LAYOUT_I420;
+	const int aligned_h = (internalContext->currentPicture.p.h + 127) & ~127;
+    *yDataLength = *yStride * aligned_h;
+    *uvDataLength = *uvStride * (aligned_h >> ss_ver);
 
 	return 1;
 }
@@ -480,16 +312,9 @@ void df_reset(AV1_Context *context)
 
 void df_close(AV1_Context *context)
 {
-	uint32_t i;
 	Context *internalContext = (Context*) context;
 
 	dav1d_close(&internalContext->dav1dContext);
-
-	for (i = 0; i < internalContext->pictureMemoryPool.bufferCount; i += 1)
-	{
-		dav1dfile_aligned_free(internalContext->pictureMemoryPool.buffers[i]);
-	}
-	free(internalContext->pictureMemoryPool.buffers);
 
 	free(internalContext);
 }
