@@ -28,6 +28,8 @@
 #include "obuparse.h"
 
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 #ifdef _WIN32
 #define inline __inline

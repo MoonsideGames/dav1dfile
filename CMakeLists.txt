@@ -52,6 +52,7 @@ add_library(dav1dfile
 	include/dav1dfile.h
 	# Source Files
 	src/dav1dfile.c
+	src/obuparse.c
 )
 
 set(DAV1D_BUILD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/dav1d")
