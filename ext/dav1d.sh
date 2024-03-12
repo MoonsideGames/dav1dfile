@@ -14,7 +14,7 @@ cd build
 : # macOS might require: -Dc_args=-fno-stack-check
 : # Build with asan: -Db_sanitize=address
 : # Build with ubsan: -Db_sanitize=undefined
-if [[ "$OSTYPE" == "darwin"* ]]; then
+if [[ "$OSTYPE" =~ ^darwin ]]; then
     MACOSX_DEPLOYMENT_TARGET=10.9 meson setup --default-library=static --buildtype release ..
     MACOSX_DEPLOYMENT_TARGET=10.9 ninja
 else
