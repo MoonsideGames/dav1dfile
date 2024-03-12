@@ -11,7 +11,11 @@ cd dav1d
 mkdir -p build
 cd build
 
-meson setup --default-library=static --buildtype release ..
-ninja
+: # macOS might require: -Dc_args=-fno-stack-check
+: # Build with asan: -Db_sanitize=address
+: # Build with ubsan: -Db_sanitize=undefined
+
+MACOSX_DEPLOYMENT_TARGET=10.9 meson setup --default-library=static --buildtype release ..
+MACOSX_DEPLOYMENT_TARGET=10.9 ninja
 
 cd ../..
