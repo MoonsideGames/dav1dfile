@@ -26,5 +26,5 @@ MACOSX_DEPLOYMENT_TARGET=11.0 meson setup --cross-file=../../ext/macos_x64.txt -
 MACOSX_DEPLOYMENT_TARGET=11.0 ninja
 
 cd ..
-lipo -create -output libdav1d.dylib arm64/libdav1d.dylib x64/libdav1d.dylib
+lipo -create -output libdav1d.dylib arm64/src/libdav1d.dylib x64/src/libdav1d.dylib
 cd ..
