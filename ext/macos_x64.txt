@@ -5,7 +5,8 @@ objc = ['clang', '-arch', 'x86_64']
 objcpp = ['clang++', '-arch', 'x86_64']
 
 [host_machine]
-system = 'macOS'
+system = 'darwin'
+subsystem = 'macOS'
 cpu_family = 'x86_64'
 cpu = 'x86_64'
 endian = 'little'
