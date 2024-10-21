@@ -1,6 +1,6 @@
 # CMake Project for dav1dfile
 # Written by @NeroBurner
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.5)
 project(dav1dfile C)
 
 # Options
@@ -29,7 +29,7 @@ endif()
 # Platform Flags
 if(APPLE)
 	set(CMAKE_MACOSX_RPATH ON)
-	set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
+	set(CMAKE_OSX_DEPLOYMENT_TARGET 11.0)
 	set(LOBJC "objc")
 elseif(WIN32)
 	# "dav1dfile.dll", not "libdav1dfile.dll"
