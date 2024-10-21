@@ -8,8 +8,8 @@
 git clone -b 1.4.0 --depth 1 https://code.videolan.org/videolan/dav1d.git
 
 cd dav1d
-mkdir -p build
-cd build
+mkdir -p arm64
+cd arm64
 
 : # macOS might require: -Dc_args=-fno-stack-check
 : # Build with asan: -Db_sanitize=address
@@ -17,7 +17,13 @@ cd build
 
 MACOSX_DEPLOYMENT_TARGET=11.0 meson setup --default-library=static --buildtype release ..
 MACOSX_DEPLOYMENT_TARGET=11.0 ninja
-MACOSX_DEPLOYMENT_TARGET=11.0 meson setup --cross-file=macos_x64.txt --default-library=static --buildtype release
+
+cd ..
+mkdir -p x64
+cd x64
+MACOSX_DEPLOYMENT_TARGET=11.0 meson setup --cross-file=macos_x64.txt --default-library=static --buildtype release ..
 MACOSX_DEPLOYMENT_TARGET=11.0 ninja
+
+cd ..
 lipo -create -output universal.a arm64/libdav1dfile.a x64/libdav1dfile.a
-cd ../..
+cd ..
