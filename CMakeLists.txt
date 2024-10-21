@@ -1,6 +1,6 @@
 # CMake Project for dav1dfile
 # Written by @NeroBurner
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.5)
 project(dav1dfile C)
 
 # Options
