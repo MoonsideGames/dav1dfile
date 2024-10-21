@@ -21,7 +21,7 @@ MACOSX_DEPLOYMENT_TARGET=11.0 ninja
 cd ..
 mkdir -p x64
 cd x64
-MACOSX_DEPLOYMENT_TARGET=11.0 meson setup --cross-file=macos_x64.txt --default-library=static --buildtype release ..
+MACOSX_DEPLOYMENT_TARGET=11.0 meson setup --cross-file=../macos_x64.txt --default-library=static --buildtype release ..
 MACOSX_DEPLOYMENT_TARGET=11.0 ninja
 
 cd ..
