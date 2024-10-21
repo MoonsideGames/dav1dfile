@@ -28,7 +28,7 @@ jobs:
       run: sh ext/dav1d.sh
 
     - name: Configure CMake (Release)
-      run: cmake -B release -DCMAKE_BUILD_TYPE=Release
+      run: cmake -B release -G Ninja . -DCMAKE_BUILD_TYPE=Release
 
     - name: Build (Release)
       run: |
@@ -107,7 +107,7 @@ jobs:
         run: sh ext/dav1d_osx.sh
 
       - name: Configure CMake (Release)
-        run: cmake -B release -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
+        run: cmake -B release -G Ninja . -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
 
       - name: Build
         run: ninja -C release
