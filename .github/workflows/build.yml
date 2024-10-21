@@ -20,8 +20,7 @@ jobs:
         dnf update -y
         dnf install -y epel-release
         crb enable
-        dnf install -y chrpath cmake gcc git ninja-build python3 nasm
-        pip3 install --user meson
+        dnf install -y chrpath cmake gcc git ninja-build nasm meson
 
     - uses: actions/checkout@v4
 
@@ -101,11 +100,8 @@ jobs:
         id: set-up-homebrew
         uses: Homebrew/actions/setup-homebrew@master
 
-      - name: Install meson
-        run: pip3 install meson ninja
-
       - name: Install packages
-        run: brew install nasm
+        run: brew install meson nasm ninja
 
       - name: Get libdav1d
         run: sh ext/dav1d_osx.sh
