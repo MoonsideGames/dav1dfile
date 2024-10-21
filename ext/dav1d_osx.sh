@@ -15,7 +15,9 @@ cd build
 : # Build with asan: -Db_sanitize=address
 : # Build with ubsan: -Db_sanitize=undefined
 
-MACOSX_DEPLOYMENT_TARGET=11.0 meson setup --default-library=static --buildtype release ..
+MACOSX_DEPLOYMENT_TARGET=11.0 meson setup --default-library=static --buildtype arm64 ..
 MACOSX_DEPLOYMENT_TARGET=11.0 ninja
-
+MACOSX_DEPLOYMENT_TARGET=11.0 meson setup --cross-file=macos_x64.txt --default-library=static --buildtype x64
+MACOSX_DEPLOYMENT_TARGET=11.0 ninja
+lipo -create -output universal.a arm64/libdav1dfile.a x64/libdav1dfile.a
 cd ../..
