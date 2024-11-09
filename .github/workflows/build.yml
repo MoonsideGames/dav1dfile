@@ -69,9 +69,9 @@ jobs:
     - name: Build libdav1d
       run: |
         mkdir dav1d/build
-        cd dav1d/build
-        meson setup --vsenv --default-library=static --buildtype release ..
-        ninja -C .
+        cd dav1d
+        meson setup --vsenv --default-library=static --buildtype release ./build
+        meson compile -C ./build
         cd ../..
 
     - name: CMake configure (Release)
