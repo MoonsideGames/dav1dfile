@@ -71,7 +71,7 @@ jobs:
         mkdir dav1d/build
         cd dav1d/build
         meson setup --vsenv --default-library=static --buildtype release ..
-        ninja
+        ninja -C .
         cd ../..
 
     - name: CMake configure (Release)
