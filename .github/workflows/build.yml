@@ -53,12 +53,17 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: ilammy/setup-nasm@v1
+
+    - name: Get libdav1d
+      run: |
+        git clone git clone -b 1.4.0 --depth 1 https://code.videolan.org/videolan/dav1d.git
+        mkdir dav1d/build
+
     - uses: BSFishy/meson-build@v1.0.3
       with:
         action: build
-
-    - name: Get libdav1d
-      run: ext/dav1d.cmd
+        directory: dav1d/build
+        setup-options: --default-library=static --buildtype release
 
     - name: CMake configure (Release)
       run: |
