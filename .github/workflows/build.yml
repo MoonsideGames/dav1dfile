@@ -59,11 +59,22 @@ jobs:
         git clone -b 1.4.0 --depth 1 https://code.videolan.org/videolan/dav1d.git
         mkdir dav1d/build
 
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install Python Dependencies
+      run: pip install meson ninja
+
     - uses: BSFishy/meson-build@v1.0.3
       with:
         action: build
         directory: dav1d/build
         setup-options: --default-library=static --buildtype release
+
+    - name: Build libdav1d
+      run: meson setup --default-library=static --buildtype release dav1d/build
 
     - name: CMake configure (Release)
       run: |
