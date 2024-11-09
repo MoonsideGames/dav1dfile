@@ -56,7 +56,7 @@ jobs:
 
     - name: Get libdav1d
       run: |
-        git clone git clone -b 1.4.0 --depth 1 https://code.videolan.org/videolan/dav1d.git
+        git clone -b 1.4.0 --depth 1 https://code.videolan.org/videolan/dav1d.git
         mkdir dav1d/build
 
     - uses: BSFishy/meson-build@v1.0.3
