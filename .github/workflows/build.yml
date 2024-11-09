@@ -57,7 +57,6 @@ jobs:
     - name: Get libdav1d
       run: |
         git clone -b 1.4.0 --depth 1 https://code.videolan.org/videolan/dav1d.git
-        mkdir dav1d/build
 
     - name: Setup Python
       uses: actions/setup-python@v2
@@ -69,8 +68,10 @@ jobs:
 
     - name: Build libdav1d
       run: |
+        mkdir dav1d/build
         cd dav1d/build
         meson setup --default-library=static --buildtype release ..
+        ninja
         cd ../..
 
     - name: CMake configure (Release)
