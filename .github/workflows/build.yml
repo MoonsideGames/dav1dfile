@@ -70,7 +70,7 @@ jobs:
       run: |
         mkdir dav1d/build
         cd dav1d/build
-        meson setup --default-library=static --buildtype --vsenv release ..
+        meson setup --vsenv --default-library=static --buildtype release ..
         ninja
         cd ../..
 
