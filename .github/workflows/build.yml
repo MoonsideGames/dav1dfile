@@ -68,7 +68,10 @@ jobs:
       run: pip install meson ninja
 
     - name: Build libdav1d
-      run: meson setup --default-library=static --buildtype release dav1dfile/dav1d/build
+      run: |
+        cd dav1d/build
+        meson setup --default-library=static --buildtype release ..
+        cd ../..
 
     - name: CMake configure (Release)
       run: |
