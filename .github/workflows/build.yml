@@ -50,45 +50,34 @@ jobs:
 
   windows:
     runs-on: windows-latest
-    defaults:
-      run:
-        shell: msys2 {0}
     steps:
     - uses: actions/checkout@v3
-
-    - name: Set up MSYS2
-      uses: msys2/setup-msys2@v2
+    - uses: ilammy/setup-nasm@v1
+    - uses: BSFishy/meson-build@v1.0.3
       with:
-        msystem: mingw64
-        install: >-
-          mingw-w64-x86_64-cc
-          mingw-w64-x86_64-cmake
-          mingw-w64-x86_64-meson
-          mingw-w64-x86_64-nasm
-          mingw-w64-x86_64-ninja
-          mingw-w64-x86_64-pkgconf
-          git
+        action: build
 
     - name: Get libdav1d
       run: ext/dav1d.cmd
 
     - name: CMake configure (Release)
-      run: cmake -B release -G Ninja . -DCMAKE_BUILD_TYPE=Release
+      run: |
+        cmake -B release -G "Visual Studio 17 2022" . -DCMAKE_BUILD_TYPE:STRING=Release -A x64
 
     - name: Build (Release)
-      run: cmake --build release
+      run: cmake --build release --config Release
 
     - name: Archive build result
       uses: actions/upload-artifact@v4
       with:
         name: dav1dfile-x64
-        path: release/dav1dfile.dll
+        path: release/Release/dav1dfile.dll
 
     - name: Release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        files: release/dav1dfile.dll
+        files: release/Release/dav1dfile.dll
 
   osx:
     runs-on: macos-latest
