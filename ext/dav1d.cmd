@@ -9,12 +9,9 @@ git clone -b 1.4.0 --depth 1 https://code.videolan.org/videolan/dav1d.git
 
 cd dav1d
 mkdir build
-cd build
 
-: # macOS might require: -Dc_args=-fno-stack-check
 : # Build with asan: -Db_sanitize=address
 : # Build with ubsan: -Db_sanitize=undefined
-meson setup --default-library=static --buildtype release ..
-ninja
-
-cd ../..
+meson setup --vsenv --default-library=static --buildtype release ./build
+meson compile -C ./build
+cd ..
