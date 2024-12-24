@@ -14,6 +14,8 @@ Dependencies
 ------------
 dav1dfile depends on VideoLAN's libdav1d. A helper script for downloading and building libdav1d is included in ext/dav1d.cmd.
 
+On Linux, run `./ext/dav1d.sh` from the repository root directory. Other platforms have equivalent scripts.
+
 To build libdav1d, you will need to have meson, ninja, and nasm installed on your system.
 
 Building dav1dfile
