@@ -64,6 +64,7 @@ typedef enum PixelLayout
 	PIXEL_LAYOUT_I444
 } PixelLayout;
 
+DECLSPEC int df_open_from_memory(uint8_t* bytes, uint32_t size, AV1_Context** context);
 DECLSPEC int df_fopen(const char *fname, AV1_Context **context);
 DECLSPEC void df_close(AV1_Context *context);
 
