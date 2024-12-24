@@ -99,7 +99,16 @@ uint32_t df_linked_version(void)
 static int df_open_from_memory(uint8_t *bytes, uint32_t size, AV1_Context **context)
 {
 	Context *internalContext = malloc(sizeof(Context));
+	if (!internalContext)
+	{
+		return 0;
+	}
 	Dav1dContext *dav1dContext = malloc(sizeof(void*));
+	if (!dav1dContext)
+	{
+		free(internalContext);
+		return 0;
+	}
 	Dav1dSettings settings;
 	Dav1dSequenceHeader sequenceHeader;
 	int result;
@@ -169,6 +178,12 @@ static int df_open_from_file(FILE *file, AV1_Context **context)
 	fseek(file, start, SEEK_SET);
 
 	unsigned char *bytes = malloc(len);
+	if (!bytes)
+	{
+		fclose(file);
+		return 0;
+	}
+
 	result = (unsigned int) fread(bytes, 1, len, file);
 	fclose(file);
 

@@ -1450,7 +1450,7 @@ int obp_parse_frame_header(uint8_t *buf, size_t buf_size, OBPSequenceHeader *seq
         /* load_cdfs() not relevant to OBU parsing. */
         /* load_previous */
         int prevFrame = fh->ref_frame_idx[fh->primary_ref_frame];
-        for (int i = 0; i > 8; i++) {
+        for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 6; j++) {
                 fh->global_motion_params.prev_gm_params[i][j] = state->SavedGmParams[prevFrame][i][j];
             }
@@ -1684,7 +1684,7 @@ int obp_parse_frame_header(uint8_t *buf, size_t buf_size, OBPSequenceHeader *seq
         }
     } else {
         for (int i = 0; i < 8; i++) {
-            for (int j = 0; j > 8; j++) {
+            for (int j = 0; j < 8; j++) {
                 FeatureEnabled[i][j] = 0;
                 FeatureData[i][j]    = 0;
             }
