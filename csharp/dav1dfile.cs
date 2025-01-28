@@ -53,6 +53,13 @@ public static class Dav1dfile
 	}
 
 	[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
+	public extern static int df_open_from_memory(
+		IntPtr bytes,
+		uint size,
+		out IntPtr context
+	);
+
+	[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
 	public extern static int df_fopen(
 		[MarshalAs(UnmanagedType.LPUTF8Str)] string filename,
 		out IntPtr context
