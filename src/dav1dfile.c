@@ -222,14 +222,8 @@ void df_videoinfo(
 
 static int read_data(Context *internalContext, Dav1dData *data)
 {
-	if (internalContext->eof)
-	{
-		return 0;
-	}
-
 	if (!INTERNAL_getNextPacket(internalContext))
 	{
-		internalContext->eof = 1;
 		return 0;
 	}
 
@@ -254,48 +248,42 @@ int df_readvideo(
 ) {
 	Context *internalContext = (Context*) context;
 	Dav1dData data;
-	int getPictureResult = -1;
+	int getPictureResult;
 	int sendDataResult;
 	int i;
 
 	for (i = 0; i < numFrames; i += 1)
 	{
-		if (read_data(internalContext, &data) == 0)
+		dav1d_picture_unref(&internalContext->currentPicture);
+		while (getPictureResult = dav1d_get_picture(internalContext->dav1dContext, &internalContext->currentPicture), getPictureResult == DAV1D_ERR(EAGAIN))
 		{
-			break;
-		}
-
-		do
-		{
-			sendDataResult = dav1d_send_data(internalContext->dav1dContext, &data);
-
-			if (sendDataResult < 0 && sendDataResult != DAV1D_ERR(EAGAIN))
+			if (!read_data(internalContext, &data))
 			{
-				/* Something went wrong on data send! */
+				// not enough data, time to bail!
 				return 0;
 			}
-
-			dav1d_picture_unref(&internalContext->currentPicture);
-			getPictureResult = dav1d_get_picture(internalContext->dav1dContext, &internalContext->currentPicture);
-
-			if (getPictureResult < 0)
+			
+			while (sendDataResult = dav1d_send_data(internalContext->dav1dContext, &data), sendDataResult == DAV1D_ERR(EAGAIN))
 			{
-				if (getPictureResult != DAV1D_ERR(EAGAIN))
+				if (!read_data(internalContext, &data))
 				{
-					/* Something went wrong on picture get! */
+					// not enough data, time to bail!
 					return 0;
 				}
 			}
-			else
-			{
-				break;
-			}
-		} while (data.sz || read_data(internalContext, &data) == 1);
-	}
 
-	if (getPictureResult != 0)
-	{
-		return 0;
+			if (sendDataResult < 0)
+			{
+				// Something went wrong on data send!
+				return 0;
+			}
+		}
+
+		if (getPictureResult < 0)
+		{
+			// Something went wrong on picture get!
+			return 0;
+		}
 	}
 
 	/* Set the picture data pointers */
