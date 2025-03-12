@@ -57,6 +57,11 @@ static void allocator_no_op(const uint8_t *data, void *opaque)
 	/* no-op */
 }
 
+uint32_t df_linked_version(void)
+{
+	return DAV1DFILE_COMPILED_VERSION;
+}
+
 static inline int INTERNAL_getNextPacket(
 	Context *context
 ) {
@@ -91,9 +96,27 @@ static inline int INTERNAL_getNextPacket(
 	return result >= 0;
 }
 
-uint32_t df_linked_version(void)
+// 1 = success
+// 0 = end of stream
+// -1 = error
+static int df_INTERNAL_read_data(Context *internalContext, Dav1dData *data)
 {
-	return DAV1DFILE_COMPILED_VERSION;
+	if (internalContext->bitstreamIndex == internalContext->bitstreamDataSize)
+	{
+		return 0;
+	}
+
+	if (!INTERNAL_getNextPacket(internalContext))
+	{
+		return -1;
+	}
+
+	if (dav1d_data_wrap(data, internalContext->bitstreamData + internalContext->bitstreamIndex, internalContext->currentOBUSize, allocator_no_op, NULL) < 0)
+	{
+		return -1;
+	}
+
+	return 1;
 }
 
 int df_open_from_memory(uint8_t *bytes, uint32_t size, AV1_Context **context)
@@ -220,21 +243,6 @@ void df_videoinfo(
 	*pixelLayout = internalContext->pixelLayout;
 }
 
-static int read_data(Context *internalContext, Dav1dData *data)
-{
-	if (!INTERNAL_getNextPacket(internalContext))
-	{
-		return 0;
-	}
-
-	if (dav1d_data_wrap(data, internalContext->bitstreamData + internalContext->bitstreamIndex, internalContext->currentOBUSize, allocator_no_op, NULL) < 0)
-	{
-		return 0;
-	}
-
-	return 1;
-}
-
 int df_readvideo(
 	AV1_Context *context,
 	int numFrames,
@@ -247,42 +255,51 @@ int df_readvideo(
 	uint32_t *uvStride
 ) {
 	Context *internalContext = (Context*) context;
-	Dav1dData data;
-	int getPictureResult;
-	int sendDataResult;
-	int i;
+	Dav1dData data = {0};
+	int res;
+	int got_picture = 0;
+	//int i;
 
-	for (i = 0; i < numFrames; i += 1)
+	for (int i = 0; i < numFrames; i += 1)
 	{
 		dav1d_picture_unref(&internalContext->currentPicture);
-		while (getPictureResult = dav1d_get_picture(internalContext->dav1dContext, &internalContext->currentPicture), getPictureResult == DAV1D_ERR(EAGAIN))
+
+		if (df_INTERNAL_read_data(internalContext, &data) == 1)
 		{
-			if (!read_data(internalContext, &data))
+			do
 			{
-				// not enough data, time to bail!
-				return 0;
-			}
-			
-			while (sendDataResult = dav1d_send_data(internalContext->dav1dContext, &data), sendDataResult == DAV1D_ERR(EAGAIN))
-			{
-				if (!read_data(internalContext, &data))
-				{
-					// not enough data, time to bail!
+				res = dav1d_send_data(internalContext->dav1dContext, &data);
+				// Keep going even if the function can't consume the current data
+				//   packet. It eventually will after one or more frames have been
+				//   returned in this loop.
+				if (res < 0 && res != DAV1D_ERR(EAGAIN)) {
 					return 0;
 				}
-			}
-
-			if (sendDataResult < 0)
-			{
-				// Something went wrong on data send!
-				return 0;
-			}
+				res = dav1d_get_picture(internalContext->dav1dContext, &internalContext->currentPicture);
+				if (res < 0)
+				{
+					if (res != DAV1D_ERR(EAGAIN)) {
+						return 0;
+					}
+				}
+				else
+				{
+					got_picture = 1;
+					break;
+				}
+				// Stay in the loop as long as there's data to consume.
+			} while (data.sz || df_INTERNAL_read_data(internalContext, &data) == 1);
 		}
 
-		if (getPictureResult < 0)
+		if (!got_picture)
 		{
-			// Something went wrong on picture get!
-			return 0;
+			// end of bitstream, keep decoding
+			res = dav1d_get_picture(internalContext->dav1dContext, &internalContext->currentPicture);
+			if (res < 0)
+			{
+				internalContext->eof = 1;
+				return 0;
+			}
 		}
 	}
 
