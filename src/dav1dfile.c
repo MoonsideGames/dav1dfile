@@ -48,6 +48,7 @@ typedef struct Context {
 	int32_t width;
 	int32_t height;
 	PixelLayout pixelLayout;
+	uint8_t hbd;
 
 	uint8_t eof;
 } Context;
@@ -169,6 +170,7 @@ int df_open_from_memory(uint8_t *bytes, uint32_t size, AV1_Context **context)
 			internalContext->width = sequenceHeader.max_width;
 			internalContext->height = sequenceHeader.max_height;
 			internalContext->pixelLayout = (PixelLayout) sequenceHeader.layout;
+			internalContext->hbd = sequenceHeader.hbd;
 			break;
 		}
 	}
@@ -241,6 +243,21 @@ void df_videoinfo(
 	*width = internalContext->width;
 	*height = internalContext->height;
 	*pixelLayout = internalContext->pixelLayout;
+}
+
+void df_videoinfo2(
+	AV1_Context *context,
+	int *width,
+	int *height,
+	PixelLayout *pixelLayout,
+	uint8_t *hbd
+) {
+	Context *internalContext = (Context*) context;
+
+	*width = internalContext->width;
+	*height = internalContext->height;
+	*pixelLayout = internalContext->pixelLayout;
+	*hbd = internalContext->hbd;
 }
 
 int df_readvideo(
