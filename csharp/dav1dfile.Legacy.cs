@@ -26,6 +26,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
 
 public static class Dav1dfile
 {
@@ -59,9 +60,15 @@ public static class Dav1dfile
 		out IntPtr context
 	);
 
-	[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
-	public extern static int df_fopen(
-		[MarshalAs(UnmanagedType.LPUTF8Str)] string filename,
+	[DllImport(nativeLibName, EntryPoint = "df_fopen", CallingConvention = CallingConvention.Cdecl)]
+	private static extern unsafe int INTERNAL_df_fopen(
+		[MarshalAs(UnmanagedType.LPStr)] string fname,
+		out IntPtr context
+	);
+
+	[DllImport(nativeLibName, EntryPoint = "df_fopen", CallingConvention = CallingConvention.Cdecl)]
+	private static extern unsafe int INTERNAL_df_fopen(
+		byte* fname,
 		out IntPtr context
 	);
 
@@ -103,4 +110,40 @@ public static class Dav1dfile
 		out uint yStride,
 		out uint uvStride
 	);
+
+	/* Used for heap allocated string marshaling
+	 * Returned byte* must be free'd with FreeHGlobal.
+	 */
+	private static unsafe byte* Utf8Encode(string str)
+	{
+		int bufferSize = (str.Length * 4) + 1;
+		byte* buffer = (byte*) Marshal.AllocHGlobal(bufferSize);
+		fixed (char* strPtr = str)
+		{
+			Encoding.UTF8.GetBytes(
+				strPtr,
+				str.Length + 1,
+				buffer,
+				bufferSize
+			);
+		}
+		return buffer;
+	}
+
+	public static unsafe int df_fopen(string fname, out IntPtr context)
+	{
+		int result;
+		if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+		{
+			/* Windows fopen doesn't like UTF8, use LPCSTR and pray */
+			result = INTERNAL_df_fopen(fname, out context);
+		}
+		else
+		{
+			byte* utf8Fname = Utf8Encode(fname);
+			result = INTERNAL_df_fopen(utf8Fname, out context);
+			Marshal.FreeHGlobal((IntPtr) utf8Fname);
+		}
+		return result;
+	}
 }
