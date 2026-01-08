@@ -24,12 +24,13 @@
  *
  */
 
+using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Dav1dfile;
 
-public static partial class Dav1dfile
+public static partial class Bindings
 {
 	const string nativeLibName = "dav1dfile";
 
