@@ -24,10 +24,12 @@
  *
  */
 
-using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-public static class Dav1dfile
+namespace Dav1dfile;
+
+public static partial class Dav1dfile
 {
 	const string nativeLibName = "dav1dfile";
 
@@ -41,9 +43,6 @@ public static class Dav1dfile
 		(DAV1DFILE_PATCH_VERSION)
 	);
 
-	[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
-	public static extern uint df_linked_version();
-
 	public enum PixelLayout
 	{
 		I400,
@@ -52,32 +51,41 @@ public static class Dav1dfile
 		I444
 	}
 
-	[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
-	public extern static int df_open_from_memory(
+	[LibraryImport(nativeLibName)]
+	[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+	public static partial uint df_linked_version();
+
+	[LibraryImport(nativeLibName)]
+	[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+	public static partial int df_open_from_memory(
 		IntPtr bytes,
 		uint size,
 		out IntPtr context
 	);
 
-	[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
-	public extern static int df_fopen(
-		[MarshalAs(UnmanagedType.LPUTF8Str)] string filename,
+	[LibraryImport(nativeLibName, StringMarshalling = StringMarshalling.Utf8)]
+	[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+	public static partial int df_fopen(
+		string filename,
 		out IntPtr context
 	);
 
-	[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
-	public extern static void df_close(IntPtr context);
+	[LibraryImport(nativeLibName)]
+	[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+	public static partial void df_close(IntPtr context);
 
-	[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
-	public extern static void df_videoinfo(
+	[LibraryImport(nativeLibName)]
+	[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+	public static partial void df_videoinfo(
 		IntPtr context,
 		out int width,
 		out int height,
 		out PixelLayout pixelLayout
 	);
 
-	[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
-	public extern static void df_videoinfo2(
+	[LibraryImport(nativeLibName)]
+	[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+	public static partial void df_videoinfo2(
 		IntPtr context,
 		out int width,
 		out int height,
@@ -85,14 +93,17 @@ public static class Dav1dfile
 		out byte hbd
 	);
 
-	[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
-	public extern static int df_eos(IntPtr context);
+	[LibraryImport(nativeLibName)]
+	[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+	public static partial int df_eos(IntPtr context);
 
-	[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
-	public extern static void df_reset(IntPtr context);
+	[LibraryImport(nativeLibName)]
+	[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+	public static partial void df_reset(IntPtr context);
 
-	[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
-	public extern static int df_readvideo(
+	[LibraryImport(nativeLibName)]
+	[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+	public static partial int df_readvideo(
 		IntPtr context,
 		int numFrames,
 		out IntPtr yDataPtr,
