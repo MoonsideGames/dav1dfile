@@ -91,7 +91,8 @@ public static partial class Bindings
 		out int width,
 		out int height,
 		out PixelLayout pixelLayout,
-		out byte hbd
+		out byte hbd,
+		out double fps
 	);
 
 	[LibraryImport(nativeLibName)]

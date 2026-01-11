@@ -91,7 +91,8 @@ namespace Dav1dfile
 			out int width,
 			out int height,
 			out PixelLayout pixelLayout,
-			out byte hbd
+			out byte hbd,
+			out double fps
 		);
 
 		[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
