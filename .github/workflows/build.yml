@@ -6,27 +6,19 @@ on:
   schedule:
     - cron: '0 0 1 * *'
 
-env:
-  SDL3_VERSION: 3.1.3
-
 jobs:
   linux:
-    name: Rocky Linux
+    name: Steam Linux Runtime
     runs-on: ubuntu-latest
     container:
-      image: rockylinux/rockylinux:8
+      image: registry.gitlab.steamos.cloud/steamrt/sniper/sdk:latest
     steps:
-    - name: Are we really on Rocky Linux?
-      run: cat /etc/os-release
-
     - name: Install dependencies
-      run: |
-        dnf update -y
-        dnf install -y epel-release
-        crb enable
-        dnf install -y chrpath cmake gcc git ninja-build nasm meson
+      run: apt install -y chrpath nasm meson
 
     - uses: actions/checkout@v4
+      with:
+        submodules: true
 
     - name: Get libdav1d
       run: sh ext/libdav1d/linux.sh
@@ -51,6 +43,83 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: release/libdav1dfile.so
+
+  linux-aarch64:
+    name: Steam Linux Runtime (AArch64)
+    runs-on: ubuntu-24.04-arm
+    container:
+      image: registry.gitlab.steamos.cloud/steamrt/sniper/sdk/arm64:latest
+    steps:
+    - name: Install dependencies
+      run: apt install -y chrpath nasm meson
+
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Get libdav1d
+      run: sh ext/libdav1d/linux.sh
+
+    - name: Configure CMake (Release)
+      run: cmake -B release -G Ninja . -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build (Release)
+      run: |
+        ninja -C release
+        chrpath -d release/libdav1dfile.so
+        strip -S release/libdav1dfile.so
+
+    - name: Archive build result
+      uses: actions/upload-artifact@v4
+      with:
+        name: dav1dfile-libaarch64
+        path: release/libdav1dfile.so
+
+  linux-mingw:
+    name: Fedora Linux MinGW
+    runs-on: ubuntu-latest
+    container:
+      image: fedora
+    steps:
+    - name: Install toolchain
+      run: |
+        dnf update -y
+        dnf install -y git cmake ninja-build mingw32-gcc mingw64-gcc meson nasm
+
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Get libdav1d
+      run: |
+        sh ext/libdav1d/mingw64.sh
+        sh ext/libdav1d/mingw32.sh
+
+    - name: Configure CMake 64-bit (Release)
+      run: mingw64-cmake -B release-x64 -G Ninja . -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build 64-bit (Release)
+      run: |
+        ninja -C release-x64
+
+    - name: Configure CMake 32-bit (Release)
+      run: mingw32-cmake -B release-x86 -G Ninja . -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build 32-bit (Release)
+      run: |
+        ninja -C release-x86
+
+    - name: Archive build result 64-bit
+      uses: actions/upload-artifact@v4
+      with:
+        name: dav1dfile-x64-msvcrt
+        path: release-x64/dav1dfile.dll
+
+    - name: Archive build result 32-bit
+      uses: actions/upload-artifact@v4
+      with:
+        name: dav1dfile-x86-msvcrt
+        path: release-x86/dav1dfile.dll
 
   windows:
     runs-on: windows-latest
