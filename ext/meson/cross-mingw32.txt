@@ -1,0 +1,15 @@
+[host_machine]
+system = 'windows'
+cpu_family = 'i686'
+cpu = 'i686'
+endian = 'little'
+
+[binaries]
+c = 'i686-w64-mingw32-gcc'
+cpp = 'i686-w64-mingw32-g++'
+ar = 'i686-w64-mingw32-ar'
+ld = 'i686-w64-mingw32-ld'
+objcopy = 'i686-w64-mingw32-objcopy'
+strip = 'i686-w64-mingw32-strip'
+pkg-config = 'i686-w64-mingw32-pkg-config'
+windres = 'i686-w64-mingw32-windres'
