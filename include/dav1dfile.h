@@ -81,6 +81,8 @@ DECLSPEC void df_videoinfo2(
 	PixelLayout *pixelLayout,
 	uint8_t *hbd);
 
+DECLSPEC int df_guessframerate(AV1_Context *context, double *fps);
+
 DECLSPEC int df_eos(AV1_Context *context);
 DECLSPEC void df_reset(AV1_Context *context);
 

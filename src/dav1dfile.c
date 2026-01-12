@@ -50,6 +50,13 @@ typedef struct Context {
 	PixelLayout pixelLayout;
 	uint8_t hbd;
 
+	// timing info copied from sequence header
+	uint8_t timing_info_present;
+	uint32_t num_units_in_tick;
+	uint32_t time_scale;
+	uint8_t equal_picture_interval;
+	uint32_t num_ticks_per_picture;
+
 	uint8_t eof;
 } Context;
 
@@ -144,6 +151,12 @@ int df_open_from_memory(uint8_t *bytes, uint32_t size, AV1_Context **context)
 	internalContext->eof = 0;
 	internalContext->width = 0;
 	internalContext->height = 0;
+	internalContext->hbd = 0;
+	internalContext->timing_info_present = 0;
+	internalContext->num_units_in_tick = 0;
+	internalContext->time_scale = 0;
+	internalContext->equal_picture_interval = 0;
+	internalContext->num_ticks_per_picture = 0;
 	memset(&internalContext->currentPicture, '\0', sizeof(Dav1dPicture));
 
 	dav1d_default_settings(&settings);
@@ -171,6 +184,12 @@ int df_open_from_memory(uint8_t *bytes, uint32_t size, AV1_Context **context)
 			internalContext->height = sequenceHeader.max_height;
 			internalContext->pixelLayout = (PixelLayout) sequenceHeader.layout;
 			internalContext->hbd = sequenceHeader.hbd;
+
+			internalContext->timing_info_present = sequenceHeader.timing_info_present;
+			internalContext->num_units_in_tick = sequenceHeader.num_units_in_tick;
+			internalContext->time_scale = sequenceHeader.time_scale;
+			internalContext->equal_picture_interval = sequenceHeader.equal_picture_interval;
+			internalContext->num_ticks_per_picture = sequenceHeader.num_ticks_per_picture;
 			break;
 		}
 	}
@@ -258,6 +277,23 @@ void df_videoinfo2(
 	*height = internalContext->height;
 	*pixelLayout = internalContext->pixelLayout;
 	*hbd = internalContext->hbd;
+}
+
+int df_guessframerate(
+	AV1_Context *context,
+	double *fps
+) {
+	Context *internalContext = (Context*) context;
+
+	// Note that most encoders do not set this information by default
+	if (internalContext->timing_info_present && internalContext->equal_picture_interval) {
+		*fps = (double)internalContext->time_scale / (internalContext->num_ticks_per_picture * internalContext->num_units_in_tick);
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 int df_readvideo(

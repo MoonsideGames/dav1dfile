@@ -95,6 +95,12 @@ namespace Dav1dfile
 		);
 
 		[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
+		public extern static int df_guessframerate(
+			IntPtr context,
+			out double fps
+		);
+
+		[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
 		public extern static int df_eos(IntPtr context);
 
 		[DllImport(nativeLibName, CallingConvention = CallingConvention.Cdecl)]
