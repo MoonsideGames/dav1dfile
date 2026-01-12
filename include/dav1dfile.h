@@ -81,6 +81,19 @@ DECLSPEC void df_videoinfo2(
 	PixelLayout *pixelLayout,
 	uint8_t *hbd);
 
+/*
+ * This will attempt to guess the framerate from timing data in the sequence header.
+ * If it is present, it will set the fps value and return 1.
+ * Otherwise, the value at that pointer will not changed, and this function returns 0.
+ *
+ * Please note that as of this writing, some popular encoders (like ffpmeg) do not
+ * add this information by default, and you may have to force its inclusion, like so:
+ *
+ * ffmpeg -i input.m4v -c:v libaom-av1
+ *    -bsf:v av1_metadata=tick_rate=30000/1001:num_ticks_per_picture=1 -an output.obu
+ */
+DECLSPEC int df_guessframerate(AV1_Context *context, double *fps);
+
 DECLSPEC int df_eos(AV1_Context *context);
 DECLSPEC void df_reset(AV1_Context *context);
 

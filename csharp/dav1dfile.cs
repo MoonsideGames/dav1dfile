@@ -96,6 +96,13 @@ public static partial class Bindings
 
 	[LibraryImport(nativeLibName)]
 	[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+	public static partial int df_guessframerate(
+		IntPtr context,
+		out double fps
+	);
+
+	[LibraryImport(nativeLibName)]
+	[UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
 	public static partial int df_eos(IntPtr context);
 
 	[LibraryImport(nativeLibName)]
