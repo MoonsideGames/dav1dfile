@@ -84,6 +84,9 @@ static inline int INTERNAL_getNextPacket(
 	error.size = 0;
 
 	context->bitstreamIndex += context->currentOBUSize;
+	if (context->bitstreamIndex >= context->bitstreamDataSize)
+		return 0;
+
 	bitstreamPtr = context->bitstreamData + context->bitstreamIndex;
 
 	result = obp_get_next_obu(
@@ -109,7 +112,7 @@ static inline int INTERNAL_getNextPacket(
 // -1 = error
 static int df_INTERNAL_read_data(Context *internalContext, Dav1dData *data)
 {
-	if (internalContext->bitstreamIndex == internalContext->bitstreamDataSize)
+	if (internalContext->bitstreamIndex >= internalContext->bitstreamDataSize)
 	{
 		return 0;
 	}
