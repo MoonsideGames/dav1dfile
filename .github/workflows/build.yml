@@ -149,7 +149,7 @@ jobs:
 
     - name: CMake configure (Release)
       run: |
-        cmake -B release -G "Visual Studio 17 2022" . -DCMAKE_BUILD_TYPE:STRING=Release -A x64
+        cmake -B release -G "Visual Studio 18 2026" . -DCMAKE_BUILD_TYPE:STRING=Release -A x64
 
     - name: Build (Release)
       run: cmake --build release --config Release
